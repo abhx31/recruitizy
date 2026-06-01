@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p>Hi {{name}},</p>
+
+<p>Thank you for applying for <b>{{ job_title }}</b>.</p>
+
+<p>{{ feedback }}</p>
+
+{% if missing_skills %}
+<p><b>Some areas for improvement:</b></p>
+<ul>
+    {% for skill in missing_skills %}
+    <li>{{ skill }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<p>We encourage you to apply for future opportunities that may be a better fit.</p>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<p>Hi {{ name }},</p>
+
+<p>Welcome to <b>Recruitizy</b>.</p>
+
+{% if role == "APPLICANT" %}
+<p>You can now:</p>
+<ul>
+  <li>Apply for jobs</li>
+  <li>Track application status</li>
+  <li>Receive AI-based feedback</li>
+</ul>
+
+<p>Start applying and take the next step in your career.</p>
+
+{% elif role == "ADMIN" %}
+<p>You can now:</p>
+<ul>
+  <li>Post new job openings</li>
+  <li>Review applications</li>
+  <li>Use AI to filter candidates</li>
+</ul>
+
+<p>Start hiring the best talent efficiently.</p>
+
+{% endif %}
+
+<p>We're excited to have you on board!</p>
+
+{% endblock %}
