@@ -10,11 +10,8 @@ import {
   Loader2,
 } from "lucide-react";
 
-import {
-  formatEmploymentType,
-  formatJobLevel,
-  getJob,
-} from "@/api/job.api";
+import { getJob } from "@/api/job.api";
+import { formatEmploymentType, formatJobLevel } from "@/lib/format";
 import { ApplyButton } from "@/components/jobs/ApplyButton";
 import { Button } from "@/components/ui/button";
 

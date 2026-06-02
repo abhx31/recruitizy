@@ -5,10 +5,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
-import {
-  formatEmploymentType,
-  listJobs,
-} from "@/api/job.api";
+import { listJobs } from "@/api/job.api";
+import { formatEmploymentType, formatJobLevel } from "@/lib/format";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { JobCard } from "@/components/jobs/JobCard";
 import { JobsFilterBar } from "@/components/jobs/JobsFilterBar";
@@ -92,7 +90,7 @@ export default function ApplicantJobsPage() {
                 id={job.id}
                 title={job.title}
                 company={job.company}
-                experience={job.level}
+                experience={formatJobLevel(job.level)}
                 type={formatEmploymentType(job.employment_type)}
                 description={job.description}
               />
