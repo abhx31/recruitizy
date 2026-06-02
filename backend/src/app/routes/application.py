@@ -27,7 +27,7 @@ def apply_to_job(
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    if not job.is_active or job.status != JobStatus.OPEN:
+    if job.deleted_at is not None or job.status != JobStatus.OPEN:
         raise HTTPException(status_code=400, detail="Job not open")
 
     resume = get_latest_resume(db, current_user.id)
@@ -51,9 +51,21 @@ def get_my_applications(
     current_user: User = Depends(get_current_applicant)
 ):
     applications = service.get_user_applications(current_user.id)
-    return {
-        applications: applications,
-    }
+    return {"applications": applications}
+
+
+@router.get('/me/{application_id}', response_model=ApplicationResponse)
+def get_my_application(
+    application_id: UUID,
+    service: ApplicationService = Depends(get_application_service),
+    current_user: User = Depends(get_current_applicant),
+):
+    application = service.get_user_application(application_id, current_user.id)
+
+    if not application:
+        raise HTTPException(status_code=404, detail="Application not found")
+
+    return application
 
 
 @router.get('/job/{job_id}', response_model=ApplicationListResponse)

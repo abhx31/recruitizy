@@ -46,7 +46,7 @@ class JobResponse(BaseModel):
     description: str
     company: str
     required_skills: List[str]
-    resume_match_threshold: int
+    resume_match_threshold: Optional[int] = None
     recruiter_id: UUID
     
     level: JobLevel

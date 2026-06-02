@@ -14,9 +14,8 @@ class JobService:
         """Create a job"""
         job = Job(
             **data.model_dump(),
-            recruiter_id = recruiter_id,
-            status = JobStatus.OPEN,
-            is_active = True
+            recruiter_id=recruiter_id,
+            status=JobStatus.OPEN,
         )
         self.db.add(job)
         self.db.commit()
@@ -63,10 +62,9 @@ class JobService:
     
     def delete_job(self, job: Job):
         job.deleted_at = datetime.utcnow()
-        job.is_active = False
         job.status = JobStatus.CLOSED
         self.db.commit()
-    
+
     def get_existing_active_job(self, title, company, recruiter_id, level, employment_type):
         return self.db.query(Job).filter(
             Job.title == title,
@@ -74,7 +72,7 @@ class JobService:
             Job.recruiter_id == recruiter_id,
             Job.level == level,
             Job.employment_type == employment_type,
-            Job.is_active == True,
-            Job.deleted_at == None
+            Job.status == JobStatus.OPEN,
+            Job.deleted_at == None,
         ).first()
     
