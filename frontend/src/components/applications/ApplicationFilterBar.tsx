@@ -56,10 +56,6 @@ export function ApplicationFilterBar({
                         Pending
                     </SelectItem>
 
-                    <SelectItem value="REVIEWING">
-                        Reviewing
-                    </SelectItem>
-
                     <SelectItem value="SHORTLISTED">
                         Shortlisted
                     </SelectItem>
@@ -67,11 +63,6 @@ export function ApplicationFilterBar({
                     <SelectItem value="REJECTED">
                         Rejected
                     </SelectItem>
-
-                    <SelectItem value="ACCEPTED">
-                        Accepted
-                    </SelectItem>
-                    
                 </SelectContent>
 
             </Select>
