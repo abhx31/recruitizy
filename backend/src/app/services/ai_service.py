@@ -10,13 +10,12 @@ client = OpenAI(
     max_retries=1,
 )
 
-def evaluate_application(application) -> Dict[str, Any]:
+def evaluate_application(resume_text: str, job_description: str) -> Dict[str, Any]:
+    """Score a resume against a job description using the LLM.
+
+    Pure function: callers are responsible for extracting the resume text
+    (typically from the S3-stored PDF) and passing the job description in.
     """
-    Simulate AI evaluation of a job application.
-    """
-    resume_text = application.user.resume_text or ""
-    job_description = application.job.description or ""
-    
     if not resume_text or not job_description:
         return {
             "score": 0,

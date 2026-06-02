@@ -10,5 +10,5 @@ celery = Celery(
     backend=REDIS_URL,
 )
 
-celery.autodiscover_tasks(["app.tasks"])
-import app.tasks.email_tasks  # noqa: E402,F401
+import app.tasks.application_tasks 
+import app.tasks.email_tasks

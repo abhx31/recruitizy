@@ -1,10 +1,15 @@
-from jinja2 import Environment, FileSystemLoader
+from pathlib import Path
+
 import resend
+from jinja2 import Environment, FileSystemLoader
+
 from app.core.config import settings
 
 resend.api_key = settings.RESEND_API_KEY
 
-env = Environment(loader=FileSystemLoader("app/templates/emails"))
+TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "templates" / "emails"
+
+env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)))
 
 def render_template(template_name: str, context: dict):
     template = env.get_template(template_name)
