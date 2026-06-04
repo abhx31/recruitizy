@@ -28,10 +28,17 @@ import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { useRouter } from "next/navigation";
 import { signupUser } from "@/api/auth.api";
+import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
+import { VerifyEmailDialog } from "@/components/auth/VerifyEmailDialog";
 
 export function SignupForm() {
+    const router = useRouter();
+    const setAuth = useAuthStore((state) => state.setAuth);
+
     const [showPassword, setShowPassword] =
         useState(false);
 
@@ -39,6 +46,9 @@ export function SignupForm() {
         showConfirmPassword,
         setShowConfirmPassword,
     ] = useState(false);
+
+    const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+    const [verifyEmail, setVerifyEmail] = useState("");
 
     const form = useForm<SignupFormValues>({
         resolver: zodResolver(signupSchema),
@@ -59,18 +69,32 @@ export function SignupForm() {
     const signupMutation = useMutation({
         mutationFn: signupUser,
 
-        onSuccess: () => {
-            toast.success(
-                "Account created successfully."
-            );
+        onSuccess: (data) => {
+            setAuth(data.access_token, data.user);
+            toast.success("Account created successfully.");
+
+            if (
+                data.user.role === "recruiter" &&
+                data.user.verification_status === "PENDING_EMAIL"
+            ) {
+                setVerifyEmail(data.user.email);
+                setVerifyDialogOpen(true);
+            } else if (data.user.role === "recruiter") {
+                router.push("/recruiter/dashboard");
+            } else {
+                router.push("/applicant/dashboard");
+            }
         },
 
-        onError: () => {
-            toast.error(
-                "Unable to create account"
-            )
-        }
-    })
+        onError: (error: unknown) => {
+            const detail =
+                error instanceof AxiosError
+                    ? (error.response?.data as { detail?: string } | undefined)?.detail
+                    : null;
+            toast.error(detail ?? "Unable to create account.");
+        },
+    });
+
     function onSubmit(
         values: SignupFormValues
     ) {
@@ -78,6 +102,7 @@ export function SignupForm() {
     }
 
     return (
+        <>
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -418,5 +443,12 @@ export function SignupForm() {
 
             </form>
         </Form>
+
+        <VerifyEmailDialog
+            open={verifyDialogOpen}
+            onOpenChange={setVerifyDialogOpen}
+            email={verifyEmail}
+        />
+        </>
     );
 }

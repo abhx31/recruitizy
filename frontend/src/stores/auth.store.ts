@@ -3,11 +3,14 @@ import { persist } from "zustand/middleware";
 
 type UserRole = "recruiter" | "applicant"
 
+export type VerificationStatus = "PENDING_EMAIL" | "VERIFIED"
+
 interface User {
     id: string;
     email: string;
     name: string;
     role: UserRole;
+    verification_status: VerificationStatus;
 }
 
 interface AuthState {
@@ -24,6 +27,10 @@ interface AuthState {
 
     setAccessToken: (
         accessToken: string
+    ) => void;
+
+    setUser: (
+        user: User
     ) => void;
 }
 
@@ -46,6 +53,12 @@ export const useAuthStore = create<AuthState>() (
                 accessToken
             ) => set({
                 accessToken,
+            }),
+
+            setUser: (
+                user
+            ) => set({
+                user,
             }),
 
             logout: () => set({

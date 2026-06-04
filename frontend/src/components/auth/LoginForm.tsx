@@ -25,9 +25,12 @@ import { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
 import { useAuthStore } from "@/stores/auth.store"
 import { useRouter } from "next/navigation"
+import { VerifyEmailDialog } from "@/components/auth/VerifyEmailDialog"
 
 export function LoginForm() {
     const [showPassword, setShowPassword] = useState(false);
+    const [verifyDialogOpen, setVerifyDialogOpen] = useState(false);
+    const [verifyEmail, setVerifyEmail] = useState("");
     const router = useRouter();
 
     const setAuth = useAuthStore(
@@ -68,11 +71,17 @@ export function LoginForm() {
     const onSubmit = async (data: LoginFormValues) => {
         try {
             const response = await loginMutation.mutateAsync(data);
-            const role = response.user.role;
+            const user = response.user;
 
-            if (role === "recruiter") {
+            if (
+                user.role === "recruiter" &&
+                user.verification_status === "PENDING_EMAIL"
+            ) {
+                setVerifyEmail(user.email);
+                setVerifyDialogOpen(true);
+            } else if (user.role === "recruiter") {
                 router.push("/recruiter/dashboard");
-            } else if (role === "applicant") {
+            } else if (user.role === "applicant") {
                 router.push("/applicant/dashboard");
             }
         } catch (error) {
@@ -81,7 +90,7 @@ export function LoginForm() {
     }
 
     return (
-
+        <>
         <Form {...form}>
             <form
                 onSubmit={form.handleSubmit(onSubmit)}
@@ -202,5 +211,12 @@ export function LoginForm() {
 
             </form>
         </Form>
+
+        <VerifyEmailDialog
+            open={verifyDialogOpen}
+            onOpenChange={setVerifyDialogOpen}
+            email={verifyEmail}
+        />
+        </>
     )
 }
