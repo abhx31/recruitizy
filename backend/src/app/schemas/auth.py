@@ -3,6 +3,7 @@ from typing import Optional
 from uuid import UUID
 
 from app.core.security import validate_password_strength
+from app.models.user import VerificationStatus
 
 # Request schemas
 class SignupRequest(BaseModel):
@@ -35,6 +36,7 @@ class UserResponse(BaseModel):
     email: str
     name: str
     role: str
+    verification_status: VerificationStatus
 
     class Config:
         from_attributes = True

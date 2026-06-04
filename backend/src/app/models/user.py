@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Enum, Boolean
+from sqlalchemy import Column, String, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from uuid import uuid4
 from app.db.database import Base
@@ -9,6 +9,10 @@ class UserRole(enum.Enum):
     Applicant = "applicant"
     Recruiter = "recruiter"
 
+class VerificationStatus(enum.Enum):
+    PENDING_EMAIL = "PENDING_EMAIL"
+    VERIFIED = "VERIFIED"
+
 class User(Base):
     __tablename__ = "users"
 
@@ -18,7 +22,11 @@ class User(Base):
     company_name = Column(String, nullable=True)
     role = Column(Enum(UserRole, name="user_role_enum"), nullable=False)
     hashed_password = Column(String, nullable=False)
-    is_verified = Column(Boolean, default=False)
+    verification_status = Column(
+        Enum(VerificationStatus, name="verification_status_enum"),
+        default=VerificationStatus.PENDING_EMAIL,
+        nullable=False,
+    )
     
     refresh_tokens = relationship("RefreshToken", back_populates="user")
     applications = relationship("Application", back_populates="user")
