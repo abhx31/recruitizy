@@ -56,6 +56,7 @@ def process_application(application_id: str):
         ai_evaluation = evaluate_application(
             resume_text=resume_text,
             job_description=job.description or "",
+            required_skills=job.required_skills or [],
         )
         score = ai_evaluation["score"]
         threshold = job.resume_match_threshold or DEFAULT_THRESHOLD
@@ -63,11 +64,11 @@ def process_application(application_id: str):
         if score >= threshold:
             application.status = ApplicationStatus.SHORTLISTED
             template = "accepted.html"
-            subject = "You're shortlisted!"
+            subject = f"You're shortlisted for {job.title}"
         else:
             application.status = ApplicationStatus.REJECTED
             template = "rejected.html"
-            subject = "Application Update"
+            subject = f"Update on your {job.title} application"
 
         ai_score = AIScore(
             application_id=application.id,
