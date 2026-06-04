@@ -5,7 +5,7 @@ from app.schemas.application import ApplicationResponse, ApplicationListResponse
 from uuid import UUID
 from app.services.application_service import ApplicationService
 from app.services.resume_service import get_latest_resume
-from app.core.deps import get_current_applicant, get_current_recruiter
+from app.core.deps import get_current_applicant, get_current_verified_recruiter
 from app.models.user import User
 from app.models.job import Job, JobStatus
 from app.models.application import Application
@@ -71,7 +71,7 @@ def get_my_application(
 @router.get('/job/{job_id}', response_model=ApplicationListResponse)
 def get_job_applications(
     job_id: UUID,
-    current_user: User = Depends(get_current_recruiter),
+    current_user: User = Depends(get_current_verified_recruiter),
     service: ApplicationService = Depends(get_application_service),
     db: Session = Depends(get_db)
 ):
@@ -94,7 +94,7 @@ def update_application_status(
     application_id: UUID,
     data: ApplicationUpdate,
     service: ApplicationService = Depends(get_application_service), 
-    current_user: User = Depends(get_current_recruiter),  
+    current_user: User = Depends(get_current_verified_recruiter),  
     db: Session = Depends(get_db) 
 ):
     application = db.query(Application).filter(

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.job import JobCreate, JobUpdate, JobListResponse, JobResponse
 from app.services.job_service import JobService
-from app.core.deps import get_current_recruiter
+from app.core.deps import get_current_verified_recruiter
 from app.models.user import User
 from uuid import UUID
 
@@ -18,7 +18,7 @@ def get_job_service(db: Session = Depends(get_db)) -> JobService:
 def create_job(
     data:JobCreate,
     job_service: JobService = Depends(get_job_service),
-    current_user: User = Depends(get_current_recruiter)
+    current_user: User = Depends(get_current_verified_recruiter)
 ):
     existing = job_service.get_existing_active_job(
         title = data.title,
@@ -71,7 +71,7 @@ def update_job(
     job_id: UUID,
     data: JobUpdate,
     job_service: JobService = Depends(get_job_service),
-    current_user: User = Depends(get_current_recruiter)
+    current_user: User = Depends(get_current_verified_recruiter)
 ):
     job = job_service.get_job_by_id(job_id)
     
@@ -92,7 +92,7 @@ def update_job(
 def delete_job(
     job_id: UUID,
     job_service: JobService = Depends(get_job_service),
-    current_user: User = Depends(get_current_recruiter)
+    current_user: User = Depends(get_current_verified_recruiter)
 ):
     job = job_service.get_job_by_id(job_id)
     
