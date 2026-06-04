@@ -21,6 +21,7 @@ class Settings:
     
     # Email Settings
     RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+    FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
     
     # AWS S3 Settings
     AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME")
