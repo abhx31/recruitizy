@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
@@ -41,10 +43,23 @@ export function SidebarContent({
     (state) => state.logout
   );
 
-  const navigation =
-    user?.role === "recruiter"
-      ? recruiterNavigation
-      : applicantNavigation;
+  // Zustand persist hydrates from localStorage on the client only. During SSR
+  // and the very first client render, `user` is null even for a logged-in
+  // user, which used to make the sidebar guess "applicant" and flash the
+  // wrong nav. We delay role-based UI until after hydration completes.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Only pick a nav when we actually know the role. Don't guess.
+  const navigation = !mounted
+    ? []
+    : user?.role === "recruiter"
+    ? recruiterNavigation
+    : user?.role === "applicant"
+    ? applicantNavigation
+    : [];
 
   async function handleLogout() {
     try {
@@ -132,23 +147,29 @@ export function SidebarContent({
         >
 
           <div className="flex items-center gap-3">
-            <div
-              className="
-                flex h-10 w-10
-                items-center justify-center
-                rounded-full
-                bg-primary
-                text-sm font-semibold
-                text-primary-foreground
-              "
-            >
-              {user?.name?.charAt(0)}
-            </div>
-
-            <p className="text-sm font-medium">
-              {user?.name}
-            </p>
-
+            {mounted && user ? (
+              <>
+                <div
+                  className="
+                    flex h-10 w-10
+                    items-center justify-center
+                    rounded-full
+                    bg-primary
+                    text-sm font-semibold
+                    text-primary-foreground
+                  "
+                >
+                  {user.name?.charAt(0)}
+                </div>
+                <p className="text-sm font-medium">{user.name}</p>
+              </>
+            ) : (
+              // Hydration placeholder — avoids briefly showing empty initials
+              <>
+                <div className="h-10 w-10 rounded-full bg-muted animate-pulse" />
+                <div className="h-3 w-20 rounded bg-muted animate-pulse" />
+              </>
+            )}
           </div>
 
           <AlertDialog>

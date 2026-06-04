@@ -21,7 +21,7 @@ import { Button } from "../ui/button"
 import { loginUser } from "@/api/auth.api"
 import { useMutation } from "@tanstack/react-query"
 import { toast } from "sonner"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
 import { useAuthStore } from "@/stores/auth.store"
 import { useRouter } from "next/navigation"
@@ -36,6 +36,20 @@ export function LoginForm() {
     const setAuth = useAuthStore(
         (state) => state.setAuth
     )
+
+    // If a logged-in user lands here (e.g. via back button or by typing /login
+    // in the URL), bounce them to their dashboard so they don't see the login
+    // form for an account they're already in.
+    useEffect(() => {
+        const user = useAuthStore.getState().user;
+        if (!user) return;
+
+        if (user.role === "recruiter") {
+            router.replace("/recruiter/dashboard");
+        } else if (user.role === "applicant") {
+            router.replace("/applicant/dashboard");
+        }
+    }, [router]);
 
     const form = useForm<LoginFormValues>({
         resolver: zodResolver(loginSchema),
@@ -80,9 +94,9 @@ export function LoginForm() {
                 setVerifyEmail(user.email);
                 setVerifyDialogOpen(true);
             } else if (user.role === "recruiter") {
-                router.push("/recruiter/dashboard");
+                router.replace("/recruiter/dashboard");
             } else if (user.role === "applicant") {
-                router.push("/applicant/dashboard");
+                router.replace("/applicant/dashboard");
             }
         } catch (error) {
             console.error(error);

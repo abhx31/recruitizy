@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
@@ -22,9 +22,18 @@ export default function RecruiterLayout({
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
-  // Bounce non-recruiters away. We do this in useEffect because router.push
-  // shouldn't happen during render.
+  // Zustand `persist` hydrates from localStorage on the client only. During
+  // SSR and the very first client render `user` is null even for a logged-in
+  // user. Without this gate, the layout would redirect to /login on every
+  // refresh, flash the login page briefly, then bounce back to the dashboard.
+  const [mounted, setMounted] = useState(false);
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+
     if (user === null) {
       router.replace("/login");
       return;
@@ -32,9 +41,15 @@ export default function RecruiterLayout({
     if (user.role !== "recruiter") {
       router.replace("/applicant/dashboard");
     }
-  }, [user, router]);
+  }, [mounted, user, router]);
 
-  // While we're checking / redirecting, render nothing.
+  // Pre-hydration — render nothing rather than risking the wrong content.
+  if (!mounted) {
+    return null;
+  }
+
+  // Post-hydration — wrong user or no user, render nothing while the redirect
+  // above fires.
   if (user === null || user.role !== "recruiter") {
     return null;
   }

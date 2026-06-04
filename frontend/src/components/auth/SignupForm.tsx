@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -38,6 +38,19 @@ import { VerifyEmailDialog } from "@/components/auth/VerifyEmailDialog";
 export function SignupForm() {
     const router = useRouter();
     const setAuth = useAuthStore((state) => state.setAuth);
+
+    // If a logged-in user lands here (back button, typed URL, etc.), send
+    // them straight to their dashboard instead of showing the signup form.
+    useEffect(() => {
+        const user = useAuthStore.getState().user;
+        if (!user) return;
+
+        if (user.role === "recruiter") {
+            router.replace("/recruiter/dashboard");
+        } else if (user.role === "applicant") {
+            router.replace("/applicant/dashboard");
+        }
+    }, [router]);
 
     const [showPassword, setShowPassword] =
         useState(false);
@@ -80,9 +93,9 @@ export function SignupForm() {
                 setVerifyEmail(data.user.email);
                 setVerifyDialogOpen(true);
             } else if (data.user.role === "recruiter") {
-                router.push("/recruiter/dashboard");
+                router.replace("/recruiter/dashboard");
             } else {
-                router.push("/applicant/dashboard");
+                router.replace("/applicant/dashboard");
             }
         },
 
