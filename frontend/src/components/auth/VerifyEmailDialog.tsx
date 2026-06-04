@@ -10,7 +10,6 @@ import {
   AlertDialog,
   AlertDialogContent,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
@@ -43,43 +42,51 @@ export function VerifyEmailDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Mail className="h-5 w-5" />
+      <AlertDialogContent size="sm" className="p-8">
+        <AlertDialogHeader className="space-y-4">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/15 ring-1 ring-primary/30">
+            <Mail className="h-6 w-6 text-primary" />
           </div>
-          <AlertDialogTitle className="text-center">
-            Check your inbox
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-center">
-            We've sent a verification link to{" "}
-            <span className="font-medium text-foreground">{email}</span>. Click
-            it to activate your recruiter account.
-          </AlertDialogDescription>
-          <p className="text-center text-xs text-muted-foreground">
-            The link expires in 24 hours.
-          </p>
+
+          <div className="space-y-2">
+            <AlertDialogTitle className="text-center text-xl font-semibold tracking-tight">
+              Check your inbox
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-sm leading-relaxed">
+              We've sent a verification link to{" "}
+              <span className="font-medium text-foreground">{email}</span>.
+              <br />
+              Click it to activate your recruiter account.
+            </AlertDialogDescription>
+            <p className="text-center text-xs text-muted-foreground/80">
+              The link expires in 24 hours.
+            </p>
+          </div>
         </AlertDialogHeader>
 
-        <AlertDialogFooter className="flex flex-col gap-2 sm:flex-col sm:space-x-0">
-          <Button
-            variant="outline"
-            className="h-10 rounded-xl"
-            disabled={resendMutation.isPending}
-            onClick={() => resendMutation.mutate()}
-          >
-            {resendMutation.isPending && (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            )}
-            Resend verification email
-          </Button>
+        <div className="mt-2 flex flex-col gap-2">
           <Button
             className="h-10 rounded-xl"
             onClick={() => onOpenChange(false)}
           >
             Got it
           </Button>
-        </AlertDialogFooter>
+          <Button
+            variant="ghost"
+            className="h-10 rounded-xl text-muted-foreground hover:text-foreground"
+            disabled={resendMutation.isPending}
+            onClick={() => resendMutation.mutate()}
+          >
+            {resendMutation.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              "Resend verification email"
+            )}
+          </Button>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   );
