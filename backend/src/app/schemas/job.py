@@ -64,7 +64,9 @@ class JobParsedFile(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     company: Optional[str] = None
-    required_skills: Optional[List[str]] = None
+    required_skills: List[str] = []
+    level: Optional[JobLevel] = None
+    employment_type: Optional[EmploymentType] = None
 
 
 class JobListResponse(BaseModel):
@@ -77,3 +79,17 @@ class RecruiterJobStats(BaseModel):
     total_applicants: int
     applicants_this_week: int
     shortlisted: int
+
+
+class JobParseUploadURLRequest(BaseModel):
+    filename: str
+    content_type: str
+
+
+class JobParseUploadURLResponse(BaseModel):
+    upload_url: str
+    key: str
+
+
+class JobParseRequest(BaseModel):
+    s3_key: str

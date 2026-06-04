@@ -65,3 +65,67 @@ export async function getMyJobStats() {
 
   return response.data;
 }
+
+export interface JobPayload {
+  title: string;
+  description: string;
+  company: string;
+  required_skills: string[];
+  resume_match_threshold: number;
+  level: JobLevel;
+  employment_type: EmploymentType;
+}
+
+export async function createJob(payload: JobPayload) {
+  const response = await api.post<Job>("/job", payload);
+
+  return response.data;
+}
+
+export async function updateJob(jobId: string, payload: Partial<JobPayload> & { status?: JobStatus }) {
+  const response = await api.put<Job>(`/job/${jobId}`, payload);
+
+  return response.data;
+}
+
+export async function deleteJob(jobId: string) {
+  await api.delete(`/job/${jobId}`);
+}
+
+export interface JobParsedFile {
+  title: string | null;
+  description: string | null;
+  company: string | null;
+  required_skills: string[];
+  level: JobLevel | null;
+  employment_type: EmploymentType | null;
+}
+
+interface JobParseUploadURL {
+  upload_url: string;
+  key: string;
+}
+
+export async function parseJobFile(file: File) {
+  const urlResponse = await api.post<JobParseUploadURL>(
+    "/job/parse-upload-url",
+    {
+      filename: file.name,
+      content_type: file.type || "application/octet-stream",
+    }
+  );
+
+  const { upload_url, key } = urlResponse.data;
+
+  await fetch(upload_url, {
+    method: "PUT",
+    headers: { "Content-Type": file.type || "application/octet-stream" },
+    body: file,
+  });
+
+  const parseResponse = await api.post<JobParsedFile>("/job/parse", {
+    s3_key: key,
+  });
+
+  return parseResponse.data;
+}
