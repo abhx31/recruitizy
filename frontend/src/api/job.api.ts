@@ -22,11 +22,19 @@ export interface Job {
   employment_type: EmploymentType;
   status: JobStatus;
   created_at: string;
+  applicant_count?: number | null;
 }
 
 interface JobListResponse {
   jobs: Job[];
   total: number;
+}
+
+export interface RecruiterJobStats {
+  open_jobs: number;
+  total_applicants: number;
+  applicants_this_week: number;
+  shortlisted: number;
 }
 
 export async function listJobs(params?: { skip?: number; limit?: number }) {
@@ -42,6 +50,18 @@ export async function listJobs(params?: { skip?: number; limit?: number }) {
 
 export async function getJob(jobId: string) {
   const response = await api.get<Job>(`/job/${jobId}`);
+
+  return response.data;
+}
+
+export async function listMyJobs() {
+  const response = await api.get<JobListResponse>("/job/me");
+
+  return response.data;
+}
+
+export async function getMyJobStats() {
+  const response = await api.get<RecruiterJobStats>("/job/me/stats");
 
   return response.data;
 }
