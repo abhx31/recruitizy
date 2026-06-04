@@ -109,7 +109,7 @@ export default function VerifyEmailPage() {
         {user ? (
           <Button
             className="h-11 rounded-xl"
-            onClick={() => router.push("/recruiter/dashboard")}
+            onClick={() => router.replace("/recruiter/dashboard")}
           >
             Go to dashboard
           </Button>

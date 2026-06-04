@@ -16,8 +16,8 @@ export function AuthFooter({
             {text} {" "}
             <Link
                 href={href}
+                replace
                 className="font-medium text-foreground underline-offset-4 transition-colors hover:text-primary hover:underline"
-                
             >
                 {linkText}
             </Link>

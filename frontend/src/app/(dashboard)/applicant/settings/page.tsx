@@ -24,12 +24,12 @@ export default function SettingsPage() {
     mutationFn: logoutUser,
     onSuccess: () => {
       logout();
-      window.location.href = "/login";
+      window.location.replace("/login");
     },
     onError: () => {
       logout();
       toast.error("Server logout failed. Cleared local session.");
-      window.location.href = "/login";
+      window.location.replace("/login");
     },
   });
 

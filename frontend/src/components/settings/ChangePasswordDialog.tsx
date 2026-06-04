@@ -94,7 +94,7 @@ export function ChangePasswordDialog({
       setIsRedirecting(true);
       logout();
       onOpenChange(false);
-      window.location.href = "/login";
+      window.location.replace("/login");
     },
     onError: (error: unknown) => {
       const message =
