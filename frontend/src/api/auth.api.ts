@@ -1,14 +1,14 @@
 import { LoginFormValues, SignupFormValues } from "@/schemas/auth.schema";
-import axios from "axios";
 import api from "@/lib/api";
 
 export async function loginUser(
     data: LoginFormValues
 ) {
-    const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/login`,
-        data
-    );
+    // Must use the configured `api` instance (withCredentials: true)
+    // so the browser stores the refresh_token httpOnly cookie that the
+    // backend sets in Set-Cookie. Raw `axios.post` here would silently
+    // drop the cookie and break the auto-refresh flow.
+    const response = await api.post("/auth/login", data);
 
     return response.data;
 }
@@ -16,10 +16,9 @@ export async function loginUser(
 export async function signupUser(
     data: SignupFormValues
 ) {
-    const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/signup`,
-        data
-    );
+    // Same reasoning as loginUser — needs withCredentials for the
+    // refresh_token cookie to actually persist.
+    const response = await api.post("/auth/signup", data);
 
     return response.data;
 }
