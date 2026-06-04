@@ -1,32 +1,83 @@
 {% extends "base.html" %}
 
-{% block content %}
-<p>Hi {{ name }},</p>
+{% block preheader %}Welcome to Recruitizy — here's what you can do next.{% endblock %}
 
-<p>Welcome to <b>Recruitizy</b>.</p>
+{% block eyebrow %}
+<tr>
+    <td style="padding:18px 36px 0;background-color:#ffffff;">
+        <div style="display:inline-block;padding:6px 12px;background-color:#f0fdf4;border:1px solid #bbf7d0;border-radius:999px;font-size:11px;font-weight:600;color:#15803d;letter-spacing:0.04em;text-transform:uppercase;">
+            Welcome aboard
+        </div>
+    </td>
+</tr>
+{% endblock %}
+
+{% block content %}
+<h1 style="margin:0 0 8px;font-size:22px;line-height:1.3;font-weight:700;color:#111827;letter-spacing:-0.015em;">
+    Welcome, {{ name }}
+</h1>
+<p style="margin:0 0 24px;font-size:14px;line-height:1.5;color:#6b7280;">
+    We're glad to have you on Recruitizy.
+</p>
 
 {% if role == "APPLICANT" %}
-<p>You can now:</p>
-<ul>
-  <li>Apply for jobs</li>
-  <li>Track application status</li>
-  <li>Receive AI-based feedback</li>
-</ul>
+<p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#1f2937;">
+    Your account is ready. Here's how to make the most of it:
+</p>
 
-<p>Start applying and take the next step in your career.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 24px;">
+    <tr>
+        <td style="padding:14px 18px;background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.5;color:#374151;">
+            <strong style="color:#111827;display:block;margin-bottom:2px;">Browse open roles</strong>
+            <span style="color:#6b7280;">Filter by level, type, and skills.</span>
+        </td>
+    </tr>
+    <tr><td style="height:8px;line-height:8px;font-size:0;">&nbsp;</td></tr>
+    <tr>
+        <td style="padding:14px 18px;background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.5;color:#374151;">
+            <strong style="color:#111827;display:block;margin-bottom:2px;">Track every application</strong>
+            <span style="color:#6b7280;">See status updates in real time on your dashboard.</span>
+        </td>
+    </tr>
+    <tr><td style="height:8px;line-height:8px;font-size:0;">&nbsp;</td></tr>
+    <tr>
+        <td style="padding:14px 18px;background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.5;color:#374151;">
+            <strong style="color:#111827;display:block;margin-bottom:2px;">Get AI feedback</strong>
+            <span style="color:#6b7280;">Learn exactly what's missing on every application.</span>
+        </td>
+    </tr>
+</table>
 
-{% elif role == "ADMIN" %}
-<p>You can now:</p>
-<ul>
-  <li>Post new job openings</li>
-  <li>Review applications</li>
-  <li>Use AI to filter candidates</li>
-</ul>
+<p style="margin:0;font-size:15px;color:#1f2937;">Start applying and take the next step in your career.</p>
 
-<p>Start hiring the best talent efficiently.</p>
+{% elif role == "RECRUITER" or role == "ADMIN" %}
+<p style="margin:0 0 20px;font-size:15px;line-height:1.65;color:#1f2937;">
+    Your recruiter workspace is set up. Here's what you can do:
+</p>
 
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:0 0 24px;">
+    <tr>
+        <td style="padding:14px 18px;background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.5;color:#374151;">
+            <strong style="color:#111827;display:block;margin-bottom:2px;">Post a role in minutes</strong>
+            <span style="color:#6b7280;">Upload a JD and we'll auto-fill the form with AI.</span>
+        </td>
+    </tr>
+    <tr><td style="height:8px;line-height:8px;font-size:0;">&nbsp;</td></tr>
+    <tr>
+        <td style="padding:14px 18px;background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.5;color:#374151;">
+            <strong style="color:#111827;display:block;margin-bottom:2px;">AI shortlisting on autopilot</strong>
+            <span style="color:#6b7280;">Set a match threshold and we'll surface the strongest candidates.</span>
+        </td>
+    </tr>
+    <tr><td style="height:8px;line-height:8px;font-size:0;">&nbsp;</td></tr>
+    <tr>
+        <td style="padding:14px 18px;background-color:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;font-size:14px;line-height:1.5;color:#374151;">
+            <strong style="color:#111827;display:block;margin-bottom:2px;">One dashboard for the pipeline</strong>
+            <span style="color:#6b7280;">Track open roles, applicants, and shortlists at a glance.</span>
+        </td>
+    </tr>
+</table>
+
+<p style="margin:0;font-size:15px;color:#1f2937;">Start hiring the best talent, efficiently.</p>
 {% endif %}
-
-<p>We're excited to have you on board!</p>
-
 {% endblock %}

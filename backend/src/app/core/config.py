@@ -21,6 +21,8 @@ class Settings:
     
     # Email Settings
     RESEND_API_KEY = os.getenv("RESEND_API_KEY")
+    EMAIL_FROM = os.getenv("EMAIL_FROM", "Recruitizy <noreply@abhinavdev.in.net>")
+    EMAIL_REPLY_TO = os.getenv("EMAIL_REPLY_TO", "abhinav@abhinavdev.in.net")
     FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
     
     # AWS S3 Settings
