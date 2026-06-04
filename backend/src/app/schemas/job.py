@@ -48,21 +48,32 @@ class JobResponse(BaseModel):
     required_skills: List[str]
     resume_match_threshold: Optional[int] = None
     recruiter_id: UUID
-    
+
     level: JobLevel
     employment_type: EmploymentType
     status: JobStatus
-    
+
     created_at: datetime
-    
+    # Populated only on recruiter-specific endpoints (e.g. /api/job/me).
+    applicant_count: Optional[int] = None
+
     model_config = {"from_attributes": True}
-        
+
+
 class JobParsedFile(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     company: Optional[str] = None
     required_skills: Optional[List[str]] = None
-        
+
+
 class JobListResponse(BaseModel):
     jobs: List[JobResponse]
     total: int
+
+
+class RecruiterJobStats(BaseModel):
+    open_jobs: int
+    total_applicants: int
+    applicants_this_week: int
+    shortlisted: int

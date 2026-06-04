@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
-from app.schemas.job import JobCreate, JobUpdate, JobListResponse, JobResponse
+from app.schemas.job import JobCreate, JobUpdate, JobListResponse, JobResponse, RecruiterJobStats
 from app.services.job_service import JobService
 from app.core.deps import get_current_verified_recruiter
 from app.models.user import User
@@ -48,12 +48,32 @@ def get_jobs(
     job_service: JobService = Depends(get_job_service)
 ):
     jobs, total = job_service.get_all_jobs(skip, limit)
-    
+
     return {
         "jobs": jobs,
         "total": total
     }
-    
+
+
+@router.get("/me", response_model=JobListResponse)
+def get_my_jobs(
+    job_service: JobService = Depends(get_job_service),
+    current_user: User = Depends(get_current_verified_recruiter),
+):
+    """List the recruiter's own jobs, with applicant_count on each."""
+    jobs = job_service.get_jobs_by_recruiter_with_counts(current_user.id)
+    return {"jobs": jobs, "total": len(jobs)}
+
+
+@router.get("/me/stats", response_model=RecruiterJobStats)
+def get_my_stats(
+    job_service: JobService = Depends(get_job_service),
+    current_user: User = Depends(get_current_verified_recruiter),
+):
+    """Aggregate stats for the recruiter's dashboard."""
+    return job_service.get_stats_for_recruiter(current_user.id)
+
+
 @router.get("/{job_id}", response_model=JobResponse)
 def get_job(
     job_id: UUID,
