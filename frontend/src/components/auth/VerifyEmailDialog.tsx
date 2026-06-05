@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { Loader2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
@@ -14,6 +13,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { extractApiErrorMessage } from "@/lib/api-error";
 
 interface VerifyEmailDialogProps {
   open: boolean;
@@ -32,11 +32,9 @@ export function VerifyEmailDialog({
       toast.success("Verification email sent. Check your inbox.");
     },
     onError: (error: unknown) => {
-      const detail =
-        error instanceof AxiosError
-          ? (error.response?.data as { detail?: string } | undefined)?.detail
-          : null;
-      toast.error(detail ?? "Unable to resend verification email.");
+      toast.error(
+        extractApiErrorMessage(error, "Unable to resend verification email.")
+      );
     },
   });
 

@@ -4,7 +4,6 @@ import { useState, type ComponentProps } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -28,6 +27,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { extractApiErrorMessage } from "@/lib/api-error";
 import {
   changePasswordSchema,
   type ChangePasswordFormValues,
@@ -97,12 +97,7 @@ export function ChangePasswordDialog({
       window.location.replace("/login");
     },
     onError: (error: unknown) => {
-      const message =
-        error instanceof AxiosError
-          ? (error.response?.data as { detail?: string } | undefined)?.detail
-          : null;
-
-      toast.error(message ?? "Unable to update password.");
+      toast.error(extractApiErrorMessage(error, "Unable to update password."));
     },
   });
 

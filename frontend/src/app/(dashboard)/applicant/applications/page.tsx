@@ -10,14 +10,7 @@ import { ApplicationCard } from "@/components/applications/ApplicationCard";
 import { ApplicationFilterBar } from "@/components/applications/ApplicationFilterBar";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { Button } from "@/components/ui/button";
-
-function formatAppliedAt(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
+import { formatDate } from "@/lib/format";
 
 export default function ApplicationsPage() {
   const [search, setSearch] = useState("");
@@ -93,7 +86,7 @@ export default function ApplicationsPage() {
                 id={application.id}
                 title={application.job.title}
                 company={application.job.company}
-                appliedAt={formatAppliedAt(application.created_at)}
+                appliedAt={formatDate(application.created_at)}
                 status={application.status}
                 score={application.ai_score?.score ?? null}
               />

@@ -3,12 +3,12 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { FileText, Loader2, Sparkles, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { parseJobFile, type JobParsedFile } from "@/api/job.api";
 import { Button } from "@/components/ui/button";
+import { extractApiErrorMessage } from "@/lib/api-error";
 
 interface JobFileUploadProps {
   onParsed: (parsed: JobParsedFile) => void;
@@ -27,11 +27,7 @@ export function JobFileUpload({ onParsed }: JobFileUploadProps) {
       onParsed(parsed);
     },
     onError: (error: unknown) => {
-      const detail =
-        error instanceof AxiosError
-          ? (error.response?.data as { detail?: string } | undefined)?.detail
-          : null;
-      toast.error(detail ?? "Couldn't parse this file.");
+      toast.error(extractApiErrorMessage(error, "Couldn't parse this file."));
     },
   });
 

@@ -12,32 +12,14 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import {
-  getMyApplication,
-  type ApplicationStatus,
-} from "@/api/application.api";
+import { getMyApplication } from "@/api/application.api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-
-function formatAppliedAt(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
-}
-
-const STATUS_LABEL: Record<ApplicationStatus, string> = {
-  PENDING: "Pending",
-  SHORTLISTED: "Shortlisted",
-  REJECTED: "Rejected",
-};
-
-const STATUS_CLASSES: Record<ApplicationStatus, string> = {
-  PENDING: "bg-muted text-muted-foreground",
-  SHORTLISTED: "bg-primary/10 text-primary",
-  REJECTED: "bg-destructive/10 text-destructive",
-};
+import { formatDate } from "@/lib/format";
+import {
+  APPLICATION_STATUS_CLASSES,
+  APPLICATION_STATUS_LABEL,
+} from "@/lib/status";
 
 export default function ApplicationDetailsPage({
   params,
@@ -109,9 +91,9 @@ export default function ApplicationDetailsPage({
                 {application.job.title}
               </h1>
               <span
-                className={`rounded-full px-3 py-1 text-sm font-medium ${STATUS_CLASSES[application.status]}`}
+                className={`rounded-full px-3 py-1 text-sm font-medium ${APPLICATION_STATUS_CLASSES[application.status]}`}
               >
-                {STATUS_LABEL[application.status]}
+                {APPLICATION_STATUS_LABEL[application.status]}
               </span>
             </div>
 
@@ -122,7 +104,7 @@ export default function ApplicationDetailsPage({
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <CalendarDays className="h-4 w-4" />
-              <span>Applied on {formatAppliedAt(application.created_at)}</span>
+              <span>Applied on {formatDate(application.created_at, "long")}</span>
             </div>
           </div>
         </CardContent>

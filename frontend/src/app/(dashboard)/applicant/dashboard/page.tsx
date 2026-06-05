@@ -16,33 +16,12 @@ import {
 } from "lucide-react";
 
 import { getApplicantProfile } from "@/api/applicant.api";
-import {
-  listMyApplications,
-  type Application,
-  type ApplicationStatus,
-} from "@/api/application.api";
+import { listMyApplications } from "@/api/application.api";
+import { EmptyApplications } from "@/components/applications/EmptyApplications";
+import { RecentApplicationRow } from "@/components/applications/RecentApplicationRow";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { Button } from "@/components/ui/button";
-
-function formatAppliedAt(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-  }).format(new Date(value));
-}
-
-const STATUS_LABEL: Record<ApplicationStatus, string> = {
-  PENDING: "Pending",
-  SHORTLISTED: "Shortlisted",
-  REJECTED: "Rejected",
-};
-
-const STATUS_CLASSES: Record<ApplicationStatus, string> = {
-  PENDING: "bg-muted text-muted-foreground",
-  SHORTLISTED: "bg-primary/10 text-primary",
-  REJECTED: "bg-destructive/10 text-destructive",
-};
 
 const PROFILE_FIELDS = [
   "headline",
@@ -212,34 +191,3 @@ export default function ApplicantDashboardPage() {
   );
 }
 
-function RecentApplicationRow({ application }: { application: Application }) {
-  return (
-    <Link
-      href={`/applicant/applications/${application.id}`}
-      className="flex items-center justify-between rounded-2xl border border-border/50 p-4 transition-colors hover:bg-muted/30"
-    >
-      <div className="min-w-0">
-        <h3 className="truncate font-medium">{application.job.title}</h3>
-        <p className="mt-1 truncate text-sm text-muted-foreground">
-          {application.job.company} · {formatAppliedAt(application.created_at)}
-        </p>
-      </div>
-      <span
-        className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLASSES[application.status]}`}
-      >
-        {STATUS_LABEL[application.status]}
-      </span>
-    </Link>
-  );
-}
-
-function EmptyApplications() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border/50 py-10 text-center">
-      <p className="text-sm font-medium">No applications yet</p>
-      <p className="text-xs text-muted-foreground">
-        Apply to a role to see it here.
-      </p>
-    </div>
-  );
-}

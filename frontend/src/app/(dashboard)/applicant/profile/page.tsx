@@ -25,17 +25,13 @@ import { ResumeCard } from "@/components/profile/ResumeCard";
 import { SkillsCard } from "@/components/profile/SkillsCard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { formatDate } from "@/lib/format";
 import { useAuthStore } from "@/stores/auth.store";
 
+// Experience entries can be open-ended ("Present"); everything else is a
+// thin pass-through to the canonical formatter.
 function formatExperienceDate(value: string | null) {
-  if (!value) {
-    return "Present";
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
+  return value ? formatDate(value, "monthYear") : "Present";
 }
 
 export default function ProfilePage() {

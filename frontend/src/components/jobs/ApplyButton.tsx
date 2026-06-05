@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -20,6 +19,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { extractApiErrorMessage } from "@/lib/api-error";
+
+const ALREADY_APPLIED_MESSAGE = "You have already applied to this job.";
 
 interface ApplyButtonProps {
   jobId: string;
@@ -38,14 +40,14 @@ export function ApplyButton({ jobId, jobTitle }: ApplyButtonProps) {
       setIsOpen(false);
     },
     onError: (error: unknown) => {
-      const detail =
-        error instanceof AxiosError
-          ? (error.response?.data as { detail?: string } | undefined)?.detail
-          : null;
+      const message = extractApiErrorMessage(
+        error,
+        "Unable to submit application."
+      );
 
-      toast.error(detail ?? "Unable to submit application.");
+      toast.error(message);
 
-      if (detail === "You have already applied to this job.") {
+      if (message === ALREADY_APPLIED_MESSAGE) {
         setHasApplied(true);
         setIsOpen(false);
       }

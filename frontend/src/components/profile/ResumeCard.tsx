@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/format";
 
 interface ResumeCardProps {
   resumeName?: string;
@@ -22,18 +23,6 @@ interface ResumeCardProps {
   onUpload: (file: File) => void;
   onSync: () => void;
   onView?: () => void;
-}
-
-function formatUploadedAt(value?: string) {
-  if (!value) {
-    return null;
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
 }
 
 export function ResumeCard({
@@ -46,7 +35,7 @@ export function ResumeCard({
   onView,
 }: ResumeCardProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const formattedUploadedAt = formatUploadedAt(uploadedAt);
+  const formattedUploadedAt = uploadedAt ? formatDate(uploadedAt) : null;
   const hasResume = Boolean(resumeName);
   function handleFileChange(
     event: ChangeEvent<HTMLInputElement>

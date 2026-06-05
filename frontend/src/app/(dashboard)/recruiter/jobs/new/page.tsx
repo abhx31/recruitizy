@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { toast } from "sonner";
 
 import { createJob, type JobParsedFile } from "@/api/job.api";
@@ -13,14 +12,13 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { JobFileUpload } from "@/components/jobs/JobFileUpload";
 import { JobForm } from "@/components/jobs/JobForm";
 import { Card, CardContent } from "@/components/ui/card";
+import { extractApiErrorMessage } from "@/lib/api-error";
 import type { JobFormValues } from "@/schemas/job.schema";
 
 export default function NewJobPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  // Hold the parsed defaults + a key to remount JobForm after a parse
-  // (react-hook-form keeps its original defaultValues otherwise).
   const [parsedDefaults, setParsedDefaults] = useState<
     Partial<JobFormValues>
   >({});
@@ -35,17 +33,11 @@ export default function NewJobPage() {
       router.replace("/recruiter/jobs");
     },
     onError: (error: unknown) => {
-      const detail =
-        error instanceof AxiosError
-          ? (error.response?.data as { detail?: string } | undefined)?.detail
-          : null;
-      toast.error(detail ?? "Unable to post role.");
+      toast.error(extractApiErrorMessage(error, "Unable to post role."));
     },
   });
 
   function handleParsed(parsed: JobParsedFile) {
-    // Map nullable backend fields to the form defaults. Only set fields
-    // that were actually extracted; leave the rest at the schema defaults.
     const next: Partial<JobFormValues> = {};
     if (parsed.title) next.title = parsed.title;
     if (parsed.company) next.company = parsed.company;

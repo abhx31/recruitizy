@@ -8,6 +8,10 @@ import {
 
 import type { ApplicationStatus } from "@/api/application.api";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  APPLICATION_STATUS_CLASSES,
+  APPLICATION_STATUS_LABEL,
+} from "@/lib/status";
 
 interface ApplicationCardProps {
   id: string;
@@ -17,18 +21,6 @@ interface ApplicationCardProps {
   status: ApplicationStatus;
   score?: number | null;
 }
-
-const STATUS_LABEL: Record<ApplicationStatus, string> = {
-  PENDING: "Pending",
-  SHORTLISTED: "Shortlisted",
-  REJECTED: "Rejected",
-};
-
-const STATUS_CLASSES: Record<ApplicationStatus, string> = {
-  PENDING: "bg-muted text-muted-foreground",
-  SHORTLISTED: "bg-primary/10 text-primary",
-  REJECTED: "bg-destructive/10 text-destructive",
-};
 
 export function ApplicationCard({
   id,
@@ -46,9 +38,9 @@ export function ApplicationCard({
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-xl font-semibold tracking-tight">{title}</h2>
               <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_CLASSES[status]}`}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${APPLICATION_STATUS_CLASSES[status]}`}
               >
-                {STATUS_LABEL[status]}
+                {APPLICATION_STATUS_LABEL[status]}
               </span>
             </div>
 

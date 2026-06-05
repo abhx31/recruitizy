@@ -9,7 +9,6 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,6 +17,7 @@ import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { JobForm } from "@/components/jobs/JobForm";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { extractApiErrorMessage } from "@/lib/api-error";
 import type { JobFormValues } from "@/schemas/job.schema";
 
 export default function EditJobPage({
@@ -43,11 +43,7 @@ export default function EditJobPage({
       router.replace("/recruiter/jobs");
     },
     onError: (error: unknown) => {
-      const detail =
-        error instanceof AxiosError
-          ? (error.response?.data as { detail?: string } | undefined)?.detail
-          : null;
-      toast.error(detail ?? "Unable to update role.");
+      toast.error(extractApiErrorMessage(error, "Unable to update role."));
     },
   });
 
