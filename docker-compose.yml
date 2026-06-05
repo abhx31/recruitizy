@@ -34,7 +34,9 @@ services:
       # Opt this container in to autoheal's restart-on-unhealthy behavior.
       autoheal: "true"
     healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      # Use python (guaranteed present in the image) instead of curl, which
+      # the slim base doesn't ship. Exits 0 only on HTTP 200.
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://localhost:8000/health', timeout=3).status == 200 else 1)"]
       interval: 30s
       timeout: 5s
       retries: 3
