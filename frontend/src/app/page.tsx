@@ -5,7 +5,6 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingNavbar } from "@/components/landing/LandingNavbar";
 import { ProductInside } from "@/components/landing/ProductInside";
-import { TrustStrip } from "@/components/landing/TrustStrip";
 
 export default function Home() {
   return (
@@ -13,7 +12,6 @@ export default function Home() {
       <LandingNavbar />
       <main className="flex-1">
         <Hero />
-        <TrustStrip />
         <ProductInside />
         <AudienceSplit />
         <HowItWorks />

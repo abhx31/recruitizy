@@ -32,13 +32,6 @@ const item: Variants = {
   },
 };
 
-const ACTIVITY = [
-  { name: "Marcus", company: "Linear" },
-  { name: "Priya", company: "Vercel" },
-  { name: "Sarah", company: "Resend" },
-  { name: "Anita", company: "Cal.com" },
-  { name: "Jamie", company: "Loops" },
-];
 
 const CATEGORIES = [
   "Engineering",
@@ -60,9 +53,6 @@ export function Hero() {
         animate="show"
         className="relative mx-auto flex max-w-4xl flex-col items-center text-center"
       >
-        <motion.div variants={item}>
-          <ActivityTicker />
-        </motion.div>
 
         <motion.h1
           variants={item}
@@ -128,41 +118,6 @@ export function Hero() {
   );
 }
 
-function ActivityTicker() {
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setIndex((i) => (i + 1) % ACTIVITY.length);
-    }, 4000);
-    return () => clearInterval(id);
-  }, []);
-
-  const entry = ACTIVITY[index];
-
-  return (
-    <div className="inline-flex items-center gap-2.5 rounded-full border border-border/60 bg-card/40 py-1 pl-2 pr-3.5 text-xs font-medium text-muted-foreground backdrop-blur-sm">
-      <span className="relative flex h-2 w-2 items-center justify-center">
-        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-50" />
-        <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
-      </span>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={index}
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -6 }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          className="whitespace-nowrap"
-        >
-          <span className="text-foreground/90">{entry.name}</span> was hired at{" "}
-          <span className="text-foreground/90">{entry.company}</span>
-        </motion.span>
-      </AnimatePresence>
-      <span className="text-muted-foreground/60">· just now</span>
-    </div>
-  );
-}
 
 function BackgroundGlow() {
   return (
