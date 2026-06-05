@@ -1,11 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, Cookie
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, Cookie
 from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.schemas.auth import SignupRequest, LoginRequest, TokenResponse, UserResponse, MessageResponse, RefreshTokenResponse, ChangePasswordRequest
 from app.services.auth_service import AuthService
 from app.core.config import settings
-from app.tasks.email_tasks import send_welcome_email, send_verification_email
+from app.tasks.email_tasks import send_verification_email
+from app.services.rate_limit import check_fixed_window, get_client_ip
 from app.services.verification_service import (
     consume_token,
     is_free_email_domain,
@@ -16,6 +17,24 @@ from app.services.verification_service import (
 from app.models.user import User, UserRole, VerificationStatus
 from app.core.deps import get_current_user
 
+# Rate-limit policy lives at the top of the route file so it's easy to find
+# and tune. Numbers picked to be invisible to humans, painful for scripts.
+_LOGIN_LIMIT = 10
+_LOGIN_WINDOW = 60          # 10 login attempts per minute per (IP, email)
+
+_SIGNUP_LIMIT = 5
+_SIGNUP_WINDOW = 60 * 60    # 5 signups per hour per IP
+
+
+def _enforce_rate_limit(key: str, limit: int, window: int, message: str) -> None:
+    result = check_fixed_window(key, limit=limit, window_seconds=window)
+    if not result.allowed:
+        raise HTTPException(
+            status_code=429,
+            detail=message,
+            headers={"Retry-After": str(result.retry_after)},
+        )
+
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
@@ -24,9 +43,20 @@ def get_auth_service(db: Session = Depends(get_db)) -> AuthService:
 @router.post("/signup", response_model=TokenResponse)
 def signup(
     data: SignupRequest,
+    request: Request,
     response: Response,
     auth_service: AuthService = Depends(get_auth_service)
 ):
+    # Rate limit account creation per source IP to deter automated signup spam.
+    ip = get_client_ip(request)
+    if ip:
+        _enforce_rate_limit(
+            key=f"rate:signup:{ip}",
+            limit=_SIGNUP_LIMIT,
+            window=_SIGNUP_WINDOW,
+            message="Too many signup attempts. Please try again later.",
+        )
+
     # Check if exists
     if auth_service.get_user_by_email(data.email):
         raise HTTPException(status_code=400, detail="Email already registered")
@@ -41,13 +71,11 @@ def signup(
     # Create user (default verification_status=PENDING_EMAIL via the model)
     user = auth_service.create_user(data.email, data.password, data.name, data.role)
 
-    # Send the right email per role
-    if user.role == UserRole.Recruiter:
-        token = issue_token(user.id)
-        verify_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
-        send_verification_email.delay(user.email, user.name, verify_url)
-    else:
-        send_welcome_email.delay(user.email, user.name, user.role.value)
+    # Every new account must verify their email before they can use the product.
+    # The verify email IS the welcome — no separate welcome email.
+    token = issue_token(user.id)
+    verify_url = f"{settings.FRONTEND_URL}/verify-email?token={token}"
+    send_verification_email.delay(user.email, user.name, verify_url)
 
     # Create tokens
     access_token = auth_service.create_access_token_for_user(user)
@@ -71,14 +99,27 @@ def signup(
 @router.post("/login", response_model=TokenResponse)
 def login (
     data: LoginRequest,
+    request: Request,
     response: Response,
     auth_service: AuthService = Depends(get_auth_service)
 ):
+    # Rate limit by (IP, email) so a single IP can't grind through guesses on
+    # one account, and a single email can't be targeted from many IPs. Email
+    # is lowercased so case variations share the same bucket.
+    ip = get_client_ip(request) or "unknown"
+    email_key = data.email.strip().lower()
+    _enforce_rate_limit(
+        key=f"rate:login:{ip}:{email_key}",
+        limit=_LOGIN_LIMIT,
+        window=_LOGIN_WINDOW,
+        message="Too many login attempts. Please try again in a minute.",
+    )
+
     # Find User
     user = auth_service.get_user_by_email(data.email)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    
+
     # Verify Password
     if not auth_service.verify_user_password(user, data.password):
         raise HTTPException(status_code=401, detail="Invalid email or password")

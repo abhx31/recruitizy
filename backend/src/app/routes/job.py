@@ -18,6 +18,7 @@ from app.schemas.job import (
 )
 from app.services.job_service import JobService
 from app.services.ai_service import extract_job_from_description_text
+from app.services.rate_limit import check_fixed_window
 from app.services.resume_text_extractor import extract_text_from_pdf
 from app.services.s3_service import download_file, generate_upload_url
 from app.core.deps import get_current_verified_recruiter
@@ -25,6 +26,11 @@ from app.models.user import User
 from uuid import UUID
 
 router = APIRouter(prefix="/api/job", tags=["job"])
+
+# Each JD parse hits the NVIDIA AI endpoint (slow + costs us money).
+# 20/hour is generous for legitimate use, painful for scripted abuse.
+_PARSE_LIMIT = 20
+_PARSE_WINDOW = 60 * 60
 
 def get_job_service(db: Session = Depends(get_db)) -> JobService:
     return JobService(db)
@@ -117,13 +123,25 @@ def get_jd_upload_url(
 @router.post("/parse", response_model=JobParsedFile)
 def parse_job_from_s3(
     payload: JobParseRequest,
-    _: User = Depends(get_current_verified_recruiter),
+    current_user: User = Depends(get_current_verified_recruiter),
 ):
     """Download an uploaded JD from S3, extract text, parse with AI.
 
     The file stays in S3 after parsing — same lifecycle as resumes. A bucket
     lifecycle rule can age out the `jd-uploads/*` prefix if storage grows.
     """
+    parse_quota = check_fixed_window(
+        key=f"rate:job-parse:{current_user.id}",
+        limit=_PARSE_LIMIT,
+        window_seconds=_PARSE_WINDOW,
+    )
+    if not parse_quota.allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="You've hit the JD parsing limit for this hour. Please try again later.",
+            headers={"Retry-After": str(parse_quota.retry_after)},
+        )
+
     suffix = os.path.splitext(payload.s3_key)[1].lower() or ".pdf"
 
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:

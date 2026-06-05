@@ -5,8 +5,11 @@ from app.models.job import Job
 from app.models.resume import Resume
 from sqlalchemy.orm import Session, joinedload
 from app.tasks.application_tasks import process_application
+from app.tasks.email_tasks import send_hr_decision_email
 
 logger = logging.getLogger(__name__)
+
+_NOTIFIABLE_STATUSES = {ApplicationStatus.SHORTLISTED, ApplicationStatus.REJECTED}
 
 class ApplicationService:
     def __init__(self, db: Session):
@@ -17,6 +20,7 @@ class ApplicationService:
             joinedload(Application.job),
             joinedload(Application.ai_score),
             joinedload(Application.resume),
+            joinedload(Application.user),
         )
         
     def apply(self, user, job: Job, resume: Resume):
@@ -55,11 +59,33 @@ class ApplicationService:
         return self.get_user_application(application.id, user.id)
     
     def update_status(self, application, data):
-        """Update the status of an application."""
+        """Update the status of an application.
+
+        When a recruiter manually flips the status to SHORTLISTED or REJECTED,
+        notify the applicant by email — but only if the status actually
+        changed, so re-clicking the same button doesn't spam them.
+        """
+        previous = application.status
         application.status = data.status
         self.db.commit()
         self.db.refresh(application)
-        
+
+        if previous != application.status and application.status in _NOTIFIABLE_STATUSES:
+            try:
+                send_hr_decision_email.delay(
+                    application.user.email,
+                    application.user.name,
+                    application.job.title,
+                    application.job.company,
+                    application.status.value,
+                )
+            except Exception as error:
+                logger.exception(
+                    "Failed to enqueue HR decision email for application %s: %s",
+                    application.id,
+                    error,
+                )
+
         return application
     
     def get_user_applications(self, user_id):

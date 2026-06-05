@@ -58,3 +58,33 @@ class ApplicationResponse(BaseModel):
 
 class ApplicationListResponse(BaseModel):
     applications: List[ApplicationResponse]
+
+
+class ApplicationApplicantInfo(BaseModel):
+    id: UUID
+    name: str
+    email: str
+
+    model_config = {"from_attributes": True}
+
+
+class RecruiterApplicationResumeInfo(BaseModel):
+    id: UUID
+    original_name: str
+    download_url: Optional[str] = None
+
+    model_config = {"from_attributes": True}
+
+
+class RecruiterApplicationResponse(BaseModel):
+    id: UUID
+    job_id: UUID
+    status: ApplicationStatus
+    created_at: datetime
+    applicant: ApplicationApplicantInfo
+    ai_score: Optional[ApplicationAIScoreInfo] = None
+    resume: Optional[RecruiterApplicationResumeInfo] = None
+
+
+class RecruiterApplicationListResponse(BaseModel):
+    applications: List[RecruiterApplicationResponse]

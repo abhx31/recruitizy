@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.db.database import get_db
-from app.core.deps import get_current_user
+from app.core.deps import get_current_verified_applicant
 from app.models.user import User
 from app.schemas.applicant import (
     ApplicantProfileResponse,
@@ -28,7 +28,7 @@ def get_applicant_service(
 )
 def get_profile(
     current_user: User = Depends(
-        get_current_user
+        get_current_verified_applicant
     ),
 
     applicant_service: ApplicantService = Depends(
@@ -51,7 +51,7 @@ def update_profile(
     data: ApplicantProfileUpdate,
 
     current_user: User = Depends(
-        get_current_user
+        get_current_verified_applicant
     ),
 
     applicant_service: ApplicantService = Depends(

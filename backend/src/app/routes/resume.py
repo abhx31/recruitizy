@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from app.db.database import get_db
-from app.core.deps import get_current_applicant
+from app.core.deps import get_current_verified_applicant
 from app.schemas.applicant import ApplicantProfileResponse
 from app.schemas.resume import (
     UploadURLRequest,
@@ -31,8 +31,14 @@ from app.services.s3_service import (
 from app.services.resume_text_extractor import extract_text_from_pdf
 from app.services.ai_service import extract_profile_from_resume_text
 from app.services.applicant_service import ApplicantService
+from app.services.rate_limit import check_fixed_window
 
 router = APIRouter(prefix='/api/resume', tags={"Resumes"})
+
+# Each upload-url call provisions an S3 PUT slot. 10/hour is plenty for an
+# honest applicant tweaking their resume; throttles automated abuse.
+_UPLOAD_URL_LIMIT = 10
+_UPLOAD_URL_WINDOW = 60 * 60
 
 
 def parse_iso_date(value):
@@ -99,8 +105,20 @@ def normalize_profile_data(data: dict) -> dict:
 @router.post("/upload-url", response_model=UploadURLResponse)
 def get_upload_url(
     payload: UploadURLRequest,
-    current_user = Depends(get_current_applicant)
+    current_user = Depends(get_current_verified_applicant)
 ):
+    quota = check_fixed_window(
+        key=f"rate:resume-upload-url:{current_user.id}",
+        limit=_UPLOAD_URL_LIMIT,
+        window_seconds=_UPLOAD_URL_WINDOW,
+    )
+    if not quota.allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="You've reached the resume upload limit for this hour. Please try again later.",
+            headers={"Retry-After": str(quota.retry_after)},
+        )
+
     try:
         return generate_upload_url(
             filename=payload.filename,
@@ -121,7 +139,7 @@ def get_upload_url(
 def save_resume_data(
     payload: SaveResumeRequest,
     db: Session=Depends(get_db),
-    current_user=Depends(get_current_applicant)
+    current_user=Depends(get_current_verified_applicant)
 ):
     resume = save_resume(
         db=db,
@@ -136,7 +154,7 @@ def save_resume_data(
 @router.get("/latest", response_model=ResumeResponse | None)
 def get_latest_resume_data(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_applicant),
+    current_user=Depends(get_current_verified_applicant),
 ):
     return get_latest_resume(db, current_user.id)
 
@@ -144,7 +162,7 @@ def get_latest_resume_data(
 @router.post("/sync-profile", response_model=ApplicantProfileResponse)
 def sync_profile_from_latest_resume(
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_applicant),
+    current_user=Depends(get_current_verified_applicant),
 ):
     resume = get_latest_resume(db, current_user.id)
 
@@ -182,7 +200,7 @@ def sync_profile_from_latest_resume(
 def get_download_url(
     resume_id: UUID,
     db: Session = Depends(get_db),
-    current_user=Depends(get_current_applicant)
+    current_user=Depends(get_current_verified_applicant)
 ):
     resume = get_resume_by_id(db, resume_id, current_user.id)
     
