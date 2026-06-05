@@ -13,6 +13,11 @@ services:
       retries: 10
 
   backend:
+    # On prod the image is pulled from GHCR (BACKEND_IMAGE set by deploy
+    # script). Locally the env var is unset so we fall back to a local tag,
+    # and `build:` below builds it on first `compose up`. Both paths produce
+    # the same runtime — only the source of bits differs.
+    image: ${BACKEND_IMAGE:-recruitizy-backend:local}
     build:
       context: ./backend
     restart: unless-stopped
@@ -37,6 +42,9 @@ services:
       start_period: 30s
 
   worker:
+    # Same image as `backend` — shared bits, different entrypoint command.
+    # Avoids building two near-identical images.
+    image: ${BACKEND_IMAGE:-recruitizy-backend:local}
     build:
       context: ./backend
     restart: unless-stopped

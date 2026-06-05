@@ -1,0 +1,77 @@
+name: Backend CD
+
+# Only deploy on merges to main that actually touched backend code.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "docker-compose.yml"
+      - ".github/workflows/backend-cd.yml"
+
+env:
+  # Docker Hub image name. DOCKERHUB_USERNAME is the only piece that varies
+  # by account; the repo part is fixed for this project. Resolves to e.g.
+  # docker.io/abhinav/recruitizy-backend
+  IMAGE: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/recruitizy-backend
+
+jobs:
+  build-and-push:
+    name: Build & push to Docker Hub
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    outputs:
+      image_tag: ${{ steps.meta.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Compute image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build & push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    name: Deploy to EC2
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.EC2_PROJECT_DIR }}"
+            export BACKEND_IMAGE="${{ env.IMAGE }}:latest"
+            docker compose up -d --no-deps backend worker
+            docker image prune -f
