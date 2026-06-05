@@ -25,6 +25,16 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    labels:
+      # Opt this container in to autoheal's restart-on-unhealthy behavior.
+      autoheal: "true"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # Grace period during boot — alembic migrations + app startup take a bit.
+      start_period: 30s
 
   worker:
     build:
@@ -37,6 +47,31 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    labels:
+      autoheal: "true"
+    healthcheck:
+      # `celery inspect ping` returns non-zero when the worker isn't responsive.
+      # $$HOSTNAME (double dollar) escapes compose's interpolation so the
+      # container sees a literal $HOSTNAME which the shell then resolves.
+      test: ["CMD-SHELL", "celery -A app.core.celery inspect ping -d celery@$$HOSTNAME"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  autoheal:
+    # Sidecar that watches Docker's healthcheck reports and restarts any
+    # container labeled `autoheal=true` that goes unhealthy. Without this,
+    # `restart: unless-stopped` only restarts on container EXIT, not on a
+    # container that's "running" but reporting unhealthy.
+    image: willfarrell/autoheal:latest
+    restart: always
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal
+      AUTOHEAL_INTERVAL: "10"      # how often to scan for unhealthy containers (seconds)
+      AUTOHEAL_START_PERIOD: "30"  # don't restart anything during its grace period
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   redis-data:
