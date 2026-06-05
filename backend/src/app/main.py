@@ -6,14 +6,22 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from app.core.logging_config import configure_logging
+
+configure_logging()
 
 from app.core.redis_client import redis_client
+from app.core.request_logging import RequestIdMiddleware
 from app.db.database import get_db
 from app.routes import applicant, application, auth, job, resume
 
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+# Request ID middleware first so its contextvar is set BEFORE CORS or any
+# other middleware logs anything during the request lifecycle.
+app.add_middleware(RequestIdMiddleware)
 
 DEFAULT_ORIGINS = "http://localhost:3000,http://localhost:3001"
 origins = [
