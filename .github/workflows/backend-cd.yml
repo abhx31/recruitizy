@@ -62,16 +62,72 @@ jobs:
     timeout-minutes: 10
 
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy docker-compose.yml to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "docker-compose.yml"
+          target: ${{ secrets.EC2_PROJECT_DIR }}
+
       - name: SSH deploy
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          REDIS_URL: ${{ secrets.REDIS_URL }}
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}
+          ALLOWED_ORIGINS: ${{ secrets.ALLOWED_ORIGINS }}
+          NVIDIA_API_KEY: ${{ secrets.NVIDIA_API_KEY }}
+          NVIDIA_BASE_URL: ${{ secrets.NVIDIA_BASE_URL }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_REPLY_TO: ${{ secrets.EMAIL_REPLY_TO }}
+          FRONTEND_URL: ${{ secrets.FRONTEND_URL }}
+          AWS_BUCKET_NAME: ${{ secrets.AWS_BUCKET_NAME }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
+          envs: DATABASE_URL,REDIS_URL,SECRET_KEY,ALLOWED_ORIGINS,NVIDIA_API_KEY,NVIDIA_BASE_URL,LLM_MODEL,RESEND_API_KEY,EMAIL_FROM,EMAIL_REPLY_TO,FRONTEND_URL,AWS_BUCKET_NAME,AWS_REGION,AWS_ACCESS_KEY_ID,AWS_SECRET_ACCESS_KEY
           script: |
             set -euo pipefail
             cd "${{ secrets.EC2_PROJECT_DIR }}"
+            mkdir -p backend
+            # Wipe any prior .env before writing the new one — guards against
+            # stale secrets surviving if a previous deploy left a partial file,
+            # or if a key was removed from GitHub but lingers on disk.
+            rm -f backend/.env
+            # Write backend/.env fresh on every deploy from GitHub secrets.
+            # Quoted 'ENVEOF' would prevent expansion; unquoted is what we
+            # want so $VAR references get substituted from the forwarded env.
+            umask 077
+            cat > backend/.env <<ENVEOF
+            DATABASE_URL=${DATABASE_URL}
+            REDIS_URL=${REDIS_URL}
+            SECRET_KEY=${SECRET_KEY}
+            ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+            NVIDIA_API_KEY=${NVIDIA_API_KEY}
+            NVIDIA_BASE_URL=${NVIDIA_BASE_URL}
+            LLM_MODEL=${LLM_MODEL}
+            RESEND_API_KEY=${RESEND_API_KEY}
+            EMAIL_FROM=${EMAIL_FROM}
+            EMAIL_REPLY_TO=${EMAIL_REPLY_TO}
+            FRONTEND_URL=${FRONTEND_URL}
+            AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+            AWS_REGION=${AWS_REGION}
+            AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            ENVEOF
             export BACKEND_IMAGE="${{ env.IMAGE }}:latest"
-            docker compose up -d --no-deps backend worker
+            # Pull explicitly — `compose up` reuses the cached :latest otherwise.
+            docker compose pull backend worker
+            docker compose up -d
             docker image prune -f
