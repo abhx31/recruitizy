@@ -87,10 +87,7 @@ export function LoginForm() {
             const response = await loginMutation.mutateAsync(data);
             const user = response.user;
 
-            if (
-                user.role === "recruiter" &&
-                user.verification_status === "PENDING_EMAIL"
-            ) {
+            if (user.verification_status === "PENDING_EMAIL") {
                 setVerifyEmail(user.email);
                 setVerifyDialogOpen(true);
             } else if (user.role === "recruiter") {

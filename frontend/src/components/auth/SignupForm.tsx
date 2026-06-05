@@ -28,12 +28,12 @@ import { Input } from "@/components/ui/input";
 
 import { Button } from "@/components/ui/button";
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 import { signupUser } from "@/api/auth.api";
 import { useAuthStore } from "@/stores/auth.store";
 import { toast } from "sonner";
 import { VerifyEmailDialog } from "@/components/auth/VerifyEmailDialog";
+import { extractApiErrorMessage } from "@/lib/api-error";
 
 export function SignupForm() {
     const router = useRouter();
@@ -86,10 +86,7 @@ export function SignupForm() {
             setAuth(data.access_token, data.user);
             toast.success("Account created successfully.");
 
-            if (
-                data.user.role === "recruiter" &&
-                data.user.verification_status === "PENDING_EMAIL"
-            ) {
+            if (data.user.verification_status === "PENDING_EMAIL") {
                 setVerifyEmail(data.user.email);
                 setVerifyDialogOpen(true);
             } else if (data.user.role === "recruiter") {
@@ -100,11 +97,7 @@ export function SignupForm() {
         },
 
         onError: (error: unknown) => {
-            const detail =
-                error instanceof AxiosError
-                    ? (error.response?.data as { detail?: string } | undefined)?.detail
-                    : null;
-            toast.error(detail ?? "Unable to create account.");
+            toast.error(extractApiErrorMessage(error, "Unable to create account."));
         },
     });
 

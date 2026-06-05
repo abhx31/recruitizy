@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { VerificationGate } from "@/components/auth/VerificationGate";
 import { useAuthStore } from "@/stores/auth.store";
 
-export default function RecruiterLayout({
+export default function ApplicantLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -15,10 +15,9 @@ export default function RecruiterLayout({
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
-  // Zustand `persist` hydrates from localStorage on the client only. During
-  // SSR and the very first client render `user` is null even for a logged-in
-  // user. Without this gate, the layout would redirect to /login on every
-  // refresh, flash the login page briefly, then bounce back to the dashboard.
+  // Same SSR/persist hydration trap as the recruiter layout — see the note
+  // there for the full explanation. Without `mounted`, a hard refresh on any
+  // applicant route briefly flashes /login before bouncing back.
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -31,19 +30,16 @@ export default function RecruiterLayout({
       router.replace("/login");
       return;
     }
-    if (user.role !== "recruiter") {
-      router.replace("/applicant/dashboard");
+    if (user.role !== "applicant") {
+      router.replace("/recruiter/dashboard");
     }
   }, [mounted, user, router]);
 
-  // Pre-hydration — render nothing rather than risking the wrong content.
   if (!mounted) {
     return null;
   }
 
-  // Post-hydration — wrong user or no user, render nothing while the redirect
-  // above fires.
-  if (user === null || user.role !== "recruiter") {
+  if (user === null || user.role !== "applicant") {
     return null;
   }
 

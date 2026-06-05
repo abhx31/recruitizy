@@ -6,11 +6,11 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 
 import { getMe, verifyEmail } from "@/api/auth.api";
 import { Button } from "@/components/ui/button";
+import { extractApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/stores/auth.store";
 
 export default function VerifyEmailPage() {
@@ -71,11 +71,10 @@ export default function VerifyEmailPage() {
   }
 
   if (mutation.isError) {
-    const detail =
-      mutation.error instanceof AxiosError
-        ? (mutation.error.response?.data as { detail?: string } | undefined)
-            ?.detail
-        : null;
+    const message = extractApiErrorMessage(
+      mutation.error,
+      "We couldn't verify your email. The link may have expired."
+    );
 
     return (
       <Centered>
@@ -83,10 +82,7 @@ export default function VerifyEmailPage() {
         <h1 className="mt-8 text-2xl font-semibold tracking-tight">
           Verification failed
         </h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          {detail ??
-            "We couldn't verify your email. The link may have expired."}
-        </p>
+        <p className="mt-3 text-sm text-muted-foreground">{message}</p>
         <Actions>
           <Button className="h-11 rounded-xl" asChild>
             <Link href="/login">Sign in to request a new link</Link>
@@ -96,6 +92,11 @@ export default function VerifyEmailPage() {
     );
   }
 
+  const dashboardPath =
+    user?.role === "recruiter"
+      ? "/recruiter/dashboard"
+      : "/applicant/dashboard";
+
   return (
     <Centered>
       <Icon variant="success" />
@@ -103,13 +104,13 @@ export default function VerifyEmailPage() {
         Email verified
       </h1>
       <p className="mt-3 text-sm text-muted-foreground">
-        Your recruiter account is now active.
+        Your account is now active.
       </p>
       <Actions>
         {user ? (
           <Button
             className="h-11 rounded-xl"
-            onClick={() => router.replace("/recruiter/dashboard")}
+            onClick={() => router.replace(dashboardPath)}
           >
             Go to dashboard
           </Button>
