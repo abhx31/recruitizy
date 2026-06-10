@@ -5,7 +5,7 @@ import { type CSSProperties } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Loader2, Save } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, type ControllerRenderProps } from "react-hook-form";
 import { toast } from "sonner";
 
 import {
@@ -288,13 +288,12 @@ export function ApplicantProfileForm({
 }
 
 interface SocialInputProps {
-  field: {
-    value: string;
-    onChange: (value: string) => void;
-    onBlur: () => void;
-    name: string;
-    ref: React.Ref<HTMLInputElement>;
-  };
+  // RHF's ControllerRenderProps has the correct onChange signature for
+  // spreading into a native input — the local hand-rolled type was wrong.
+  field: ControllerRenderProps<
+    ApplicantProfileFormInput,
+    "linkedin_url" | "github_url" | "portfolio_url"
+  >;
   placeholder: string;
   resolveUrl: (value: string) => string | null;
 }
