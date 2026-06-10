@@ -66,7 +66,7 @@ function VerifyEmailContent() {
           Missing verification token
         </h1>
         <p className="mt-3 text-sm text-muted-foreground">
-          This link doesn't include a verification token. Please use the link
+          This link doesn&apos;t include a verification token. Please use the link
           from your email.
         </p>
         <Actions>

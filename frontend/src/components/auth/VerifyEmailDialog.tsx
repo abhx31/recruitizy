@@ -51,7 +51,7 @@ export function VerifyEmailDialog({
               Check your inbox
             </AlertDialogTitle>
             <AlertDialogDescription className="text-center text-sm leading-relaxed">
-              We've sent a verification link to{" "}
+              We&apos;ve sent a verification link to{" "}
               <span className="font-medium text-foreground">{email}</span>.
               <br />
               Click it to activate your recruiter account.

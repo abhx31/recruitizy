@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { useIsMounted } from "@/lib/use-is-mounted";
 import { Separator } from "@/components/ui/separator";
 import {
   AlertDialog,
@@ -47,10 +46,7 @@ export function SidebarContent({
   // and the very first client render, `user` is null even for a logged-in
   // user, which used to make the sidebar guess "applicant" and flash the
   // wrong nav. We delay role-based UI until after hydration completes.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   // Only pick a nav when we actually know the role. Don't guess.
   const navigation = !mounted

@@ -38,7 +38,7 @@ function RecruiterCard() {
       <h3 className="mt-3 text-3xl font-semibold tracking-tight md:text-4xl">
         Post the role.
         <br />
-        We'll bring the shortlist.
+        We&apos;ll bring the shortlist.
       </h3>
 
       <ul className="mt-6 space-y-2.5 text-sm text-foreground/85">

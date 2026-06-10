@@ -64,7 +64,7 @@ export default function EditJobPage({
             Role not found
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            This role doesn't exist or you don't have access to it.
+            This role doesn&apos;t exist or you don&apos;t have access to it.
           </p>
           <Button
             variant="outline"

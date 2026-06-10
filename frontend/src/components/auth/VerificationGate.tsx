@@ -42,7 +42,7 @@ export function VerificationGate() {
               Verify your email to continue
             </h1>
             <p className="text-sm leading-relaxed text-muted-foreground">
-              We've sent a verification link to{" "}
+              We&apos;ve sent a verification link to{" "}
               {user?.email ? (
                 <span className="font-medium text-foreground">
                   {user.email}

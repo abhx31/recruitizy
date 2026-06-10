@@ -1,14 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
 import Link from "next/link";
 
-import {
-  AnimatePresence,
-  motion,
-  type Variants,
-} from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";

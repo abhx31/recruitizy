@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useRouter } from "next/navigation";
 
 import { VerificationGate } from "@/components/auth/VerificationGate";
+import { useIsMounted } from "@/lib/use-is-mounted";
 import { useAuthStore } from "@/stores/auth.store";
 
 export default function ApplicantLayout({
@@ -15,13 +16,7 @@ export default function ApplicantLayout({
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
 
-  // Same SSR/persist hydration trap as the recruiter layout — see the note
-  // there for the full explanation. Without `mounted`, a hard refresh on any
-  // applicant route briefly flashes /login before bouncing back.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   useEffect(() => {
     if (!mounted) return;

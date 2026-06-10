@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 
 import { Eye, EyeOff } from "lucide-react";
 
@@ -76,8 +76,10 @@ export function SignupForm() {
         },
     });
 
-    const selectedRole =
-        form.watch("role");
+    // useWatch (subscription-based) instead of form.watch() so the React
+    // Compiler can memoize this component — form.watch() returns a non-
+    // memoizable function and triggers `react-hooks/incompatible-library`.
+    const selectedRole = useWatch({ control: form.control, name: "role" });
 
     const signupMutation = useMutation({
         mutationFn: signupUser,

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { useRouter } from "next/navigation";
 
 import { VerificationGate } from "@/components/auth/VerificationGate";
+import { useIsMounted } from "@/lib/use-is-mounted";
 import { useAuthStore } from "@/stores/auth.store";
 
 export default function RecruiterLayout({
@@ -19,10 +20,7 @@ export default function RecruiterLayout({
   // SSR and the very first client render `user` is null even for a logged-in
   // user. Without this gate, the layout would redirect to /login on every
   // refresh, flash the login page briefly, then bounce back to the dashboard.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useIsMounted();
 
   useEffect(() => {
     if (!mounted) return;

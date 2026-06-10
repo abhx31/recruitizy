@@ -169,7 +169,7 @@ export default function RecruiterApplicantsPage({
       ) : applicationsQuery.isError ? (
         <div className="rounded-3xl border border-destructive/30 bg-destructive/5 p-8 text-center">
           <h3 className="text-lg font-semibold tracking-tight text-destructive">
-            Couldn't load applicants
+            Couldn&apos;t load applicants
           </h3>
           <p className="mt-2 text-sm text-muted-foreground">
             Something went wrong. Try refreshing the page.
