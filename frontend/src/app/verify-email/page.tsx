@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -14,6 +14,25 @@ import { extractApiErrorMessage } from "@/lib/api-error";
 import { useAuthStore } from "@/stores/auth.store";
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<VerifyingFallback />}>
+      <VerifyEmailContent />
+    </Suspense>
+  );
+}
+
+function VerifyingFallback() {
+  return (
+    <Centered>
+      <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      <p className="mt-8 text-sm text-muted-foreground">
+        Verifying your email...
+      </p>
+    </Centered>
+  );
+}
+
+function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
