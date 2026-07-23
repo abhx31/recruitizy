@@ -23,7 +23,7 @@ app = FastAPI()
 # other middleware logs anything during the request lifecycle.
 app.add_middleware(RequestIdMiddleware)
 
-DEFAULT_ORIGINS = "http://localhost:3000,http://localhost:3001"
+DEFAULT_ORIGINS = "http://localhost:3000,http://localhost:3001, https://recruitizy.abhinavdev.in.net"
 origins = [
     origin.strip()
     for origin in os.getenv("ALLOWED_ORIGINS", DEFAULT_ORIGINS).split(",")
